@@ -1,0 +1,12 @@
+fastapi==0.111.0
+inquirer==3.3.0
+passlib==1.7.4
+pydantic==2.7.4
+pyfiglet==1.0.2
+python-dotenv==1.0.1
+python_jose==3.3.0
+redis_om==0.3.1
+Requests==2.32.3
+starlette==0.37.2
+uvicorn==0.30.1
+yaspin==3.0.2
