@@ -1,6 +1,6 @@
 import datetime
 import sys
-from fastapi import FastAPI, UploadFile, Depends, HTTPException, status
+from fastapi import FastAPI, UploadFile, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from redis_om import NotFoundError, Migrator
 from jose import JWTError, jwt
@@ -40,6 +40,8 @@ from functions.fileSystemInRedis import makeFileList
 import uvicorn
 import atexit
 import signal
+import string
+import random
 
 load_dotenv()
 
@@ -378,24 +380,33 @@ async def getFileByIdRequest(
         return "File does not exist"
 
 
+def deleteTempZipFolder(path: str):
+    os.remove(path)
+
+
 @app.get("/getfolderbyid/{id}")
 async def downloadFolderByIdRequest(
-    id: str, curentUser: userModel = Depends(getCurrentUserActive)
+    id: str,
+    background_tasks: BackgroundTasks,
+    curentUser: userModel = Depends(getCurrentUserActive),
 ):
+    tempFile = str(
+        "".join(random.choices(string.ascii_lowercase + string.digits, k=15))
+    )
     try:
         folder = folderModel.get(id)
+        parentFolderPath = folderModel.get(folder.parentId).path
         shutil.make_archive(
-            folder.get(folder.parentId).path + "/" + folder.folder, "zip", folder.path
+            base_name=tempFile,
+            root_dir=folder.path,
+            format="zip",
         )
-        return FileResponse(
-            folder.get(folder.parentId).path + "/" + folder.folder + ".zip"
-        )
-        os.remove(
-            folder.get(folder.parentId).path + "/" + folder.folder + ".zip"
-        )  # How to make this line execute?
+        path = folder.path + "/" + tempFile + ".zip"
+        background_tasks.add_task(deleteTempZipFolder, path)
+        return FileResponse(path)
 
     except NotFoundError:
-        return "Folder does not found"
+        return "Folder does not exist"
 
 
 pid = -1
