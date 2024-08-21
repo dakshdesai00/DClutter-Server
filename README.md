@@ -19,7 +19,7 @@ Installation:
 ```python
 MaxSizeInMemory = 2 #This is max size of file buffer stored in ram keep this as 1-2 if you have low memory in your server
 
-SecretKey = "A RANDOM STRING" #Put a random string here which will be user for JWT hashing
+SecretKey = "A RANDOM STRING" #Put a random string here which will be used for JWT hashing
 
 DBPORT = 6379 # This is default port for redis-stack-server but you can use a diffrent port to server your redis database
 ```
